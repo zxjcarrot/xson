@@ -1,0 +1,28 @@
+#!/bin/bash
+
+$XSON_TEST="test"
+$XSON_TEST_CFLAGS="-Wall -Werror -O0"
+$XSON_TEST_CC="gcc"
+
+cat << END > $XSON_TEST.c
+
+#include <stdio.h>
+#include <unistd.h>
+
+int main(){
+	printf("%d", getpagesize());
+	return 0;
+}
+
+END
+
+$xson_test="$XSON_TEST_CC $XSON_TEST_CFLAGS \
+	 -o $XSON_TEST $XSON_TEST.c"
+
+eval "$xson_test"
+
+if [-x $(XSON_TEST)]; then
+	echo pagesize: `$(XSON_TEST)`
+fi
+
+rm -rf $XSON_TEST*
