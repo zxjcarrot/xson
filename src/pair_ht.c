@@ -38,7 +38,7 @@ static const int xson_pair_ht_primes[] =  {
 			};
 static const int xson_pair_ht_nprimes = sizeof(xson_pair_ht_primes) / sizeof(int);
 
-static int xson_pair_ht_cmp(struct xson_pair * p1, char * key2) {
+static int xson_pair_ht_cmp(struct xson_pair * p1, const char * key2) {
 	int 				ret;
 	struct xson_string 	*string = p1->key->internal;
 	char 				*key1 = string->start;
@@ -64,7 +64,7 @@ inline unsigned xson_pair_ht_hash_by_pair(struct xson_pair * p) {
 	return hash; 
 }
 
-inline unsigned xson_pair_ht_hash_by_key(char * key) {
+inline unsigned xson_pair_ht_hash_by_key(const char * key) {
 	char 		ch;
 	unsigned 	hash = 0;
 
@@ -190,7 +190,7 @@ inline int xson_pair_ht_insert_replace(struct xson_pair_ht * ht, struct xson_pai
 	return XSON_RESULT_SUCCESS;
 }
 
-inline void xson_pair_ht_delete_by_key(struct xson_pair_ht * ht, char * key) {
+inline void xson_pair_ht_delete_by_key(struct xson_pair_ht * ht, const char * key) {
 	unsigned 			h;
 	struct list_head 	*p;
 	
@@ -221,7 +221,7 @@ inline int xson_pair_ht_delete(struct xson_pair_ht * ht, struct xson_pair * pair
 	return XSON_RESULT_SUCCESS;
 }
 
-inline struct xson_pair * xson_pair_ht_retrieve(struct xson_pair_ht * ht, char * key) {
+inline struct xson_pair * xson_pair_ht_retrieve(struct xson_pair_ht * ht, const char * key) {
 	unsigned 			h;
 	struct list_head 	*p;
 

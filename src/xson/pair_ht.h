@@ -47,7 +47,7 @@ typedef struct xson_pair_ht {
 */
 inline unsigned xson_pair_ht_hash_by_pair(struct xson_pair * p);
 
-inline unsigned xson_pair_ht_hash_by_key(char * key);
+inline unsigned xson_pair_ht_hash_by_key(const char * key);
 
 /*
 * Initialize the xson_pair hash table.
@@ -79,7 +79,7 @@ inline int xson_pair_ht_insert_replace(struct xson_pair_ht * ht, struct xson_pai
 * @ht: &struct xson_pair_ht from which the xson_pair will be deleted
 * @key: hash key
 */
-inline void xson_pair_ht_delete_by_key(struct xson_pair_ht * ht, char * key);
+inline void xson_pair_ht_delete_by_key(struct xson_pair_ht * ht, const char * key);
 
 /*
 * Delete the xson_pair with the key from the hash table.
@@ -96,7 +96,7 @@ inline int xson_pair_ht_delete(struct xson_pair_ht * ht, struct xson_pair * pair
 * @ht: &struct xson_pair_ht from which the xson_pair will be retrieved
 * @key: hash key
 */
-inline struct xson_pair * xson_pair_ht_retrieve(struct xson_pair_ht * ht, char * key);
+inline struct xson_pair * xson_pair_ht_retrieve(struct xson_pair_ht * ht, const char * key);
 
 /*
 * Free up the hash table.

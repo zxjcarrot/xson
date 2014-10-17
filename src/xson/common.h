@@ -97,12 +97,13 @@ void * xson_malloc(struct xmpool_t * pool, size_t size);
 int xson_is_number_start(char ch);
 int xson_is_blanks(char ch);
 
-#define XSON_RESULT_TYPE_MISMATCH -4
-#define XSON_RESULT_OP_NOTSUPPORTED -4
-#define XSON_RESULT_ERROR -3
-#define XSON_RESULT_OOM -2
-#define XSON_RESULT_INVALID_JSON -1
-#define XSON_RESULT_SUCCESS 0
+#define XSON_RESULT_OOG -6				/* result out of range */
+#define XSON_RESULT_TYPE_MISMATCH -5	/* result type mismatch */
+#define XSON_RESULT_OP_NOTSUPPORTED -4  /* operation not supported by a specific type */
+#define XSON_RESULT_ERROR -3			/* some errors occured */
+#define XSON_RESULT_OOM -2 				/* out of memory */
+#define XSON_RESULT_INVALID_JSON -1		/* the input json string is invalid */
+#define XSON_RESULT_SUCCESS 0			/* success */
 
 #define XSON_PADDING_PRINT(N, format, ...)do {\
 	int n = (N);\

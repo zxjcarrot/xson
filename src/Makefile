@@ -1,5 +1,5 @@
 #sources
-XSON_SRC = parser.c fsm_number.c fsm_string.c list.c xson_common.c xson_pair_ht.c xson_types.c xmalloc.c
+XSON_SRC = parser.c fsm_number.c fsm_string.c list.c common.c pair_ht.c types.c xmalloc.c
 #object files
 XSON_OBJ = $(XSON_SRC:.c=.o)
 #executable

@@ -20,6 +20,13 @@
 * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 * DATA, OR PROFITS; OR BUSINESS INTERR
 */
+#include <stdlib.h>
+#include <limits.h>
+#include <math.h>
+#include <memory.h>
+#include <assert.h>
+#include <errno.h>
+
 #include "xson/common.h"
 #include "xson/types.h"
 #include "xson/parser.h"
@@ -70,6 +77,15 @@ struct xson_ele_operations root_ops =  {
 	xson_root_add_child,
 	xson_root_print
 };
+
+struct xson_element* xson_value_get_elt(struct xson_value * val){
+	assert(val != NULL);
+
+	if (val == NULL)
+		return NULL;
+
+	return (struct xson_element *)val->child;
+}
 
 int xson_object_initialize(struct xson_element * e, struct xson_lex_element * lex) {
 	struct xson_object * obj;
@@ -143,6 +159,7 @@ void xson_object_print(struct xson_element * ele, int level, int indent, int don
 	}
 	XSON_PADDING_PRINT(level * indent, "}");
 }
+
 struct xson_ele_operations object_ops = {
 	xson_object_initialize,
 	xson_object_destroy,
@@ -150,6 +167,44 @@ struct xson_ele_operations object_ops = {
 	xson_object_add_child,
 	xson_object_print
 };
+
+/*
+* Get the pair to which @key is mapped.
+* Return: a pointer to that value element, NULL if the object
+*		  contains no mapping for @key.
+*/
+struct xson_pair* xson_object_get_pair(struct xson_object * obj, const char * key) {
+	assert(obj != NULL);
+	assert(key != NULL);
+
+	if (obj == NULL || key == NULL)
+		return NULL;
+
+	return xson_pair_ht_retrieve(&obj->ht, key);
+}
+
+/*
+* Get the value element of the pair to which @key is mapped.
+* Return: a pointer to that value element, NULL if the object
+*		  contains no mapping for @key.
+*/
+struct xson_element* xson_object_get_pairval(struct xson_object * obj, const char * key) {
+	struct xson_pair * pair = xson_object_get_pair(obj, key);
+
+	if (pair == NULL)
+		return NULL;
+
+	return pair->value;
+}
+
+inline int xson_object_get_size(struct xson_object *obj){
+	assert(obj != NULL);
+
+	if(obj == NULL)
+		return XSON_RESULT_ERROR;
+
+	return obj->idx;
+}
 
 int xson_array_initialize(struct xson_element * e, struct xson_lex_element * lex) {
 	struct xson_array *array;
@@ -200,6 +255,7 @@ int xson_array_add_child(struct xson_element * parent, struct xson_element * chi
 	child->parent = parent;
 	return XSON_RESULT_SUCCESS;
 }
+
 void xson_array_print(struct xson_element * ele, int level, int indent, int dont_pad_on_first_line) {
 	int 				i;
 	struct xson_array 	*array = ele->internal;
@@ -213,6 +269,7 @@ void xson_array_print(struct xson_element * ele, int level, int indent, int dont
 	}
 	XSON_PADDING_PRINT(level * indent, "]");
 }
+
 struct xson_ele_operations array_ops =  {
 	xson_array_initialize,
 	xson_array_destroy,
@@ -220,6 +277,24 @@ struct xson_ele_operations array_ops =  {
 	xson_array_add_child,
 	xson_array_print
 };
+
+struct xson_element* xson_array_get_elt(struct xson_array * array, int idx) {
+	assert(array != NULL);
+
+	if(array == NULL || idx >= array->idx || idx < 0)
+		return NULL;
+
+	return array->array[idx];
+}
+
+inline int xson_array_get_size(struct xson_array *array) {
+	assert(array != NULL);
+
+	if(array == NULL)
+		return XSON_RESULT_ERROR;
+
+	return array->idx;
+}
 
 int xson_string_initialize(struct xson_element * e, struct xson_lex_element * lex) {
 	struct xson_string *string;
@@ -258,6 +333,17 @@ struct xson_ele_operations string_ops =  {
 	xson_string_print
 };
 
+int xson_string_to_buf(struct xson_string * string, char * buf, size_t len){
+	assert(string != NULL);
+	assert(buf != NULL);
+
+	if(string == NULL || buf == NULL)
+		return XSON_RESULT_ERROR;
+
+	memcpy(buf, string->start, (size_t)(string->end - string->start));
+
+	return XSON_RESULT_SUCCESS;
+}
 int xson_number_initialize(struct xson_element * e, struct xson_lex_element * lex) {
 	struct xson_number * number;
 	if ((e->internal = xson_malloc(&e->ctx->pool, sizeof(struct xson_number))) == NULL) {
@@ -271,6 +357,7 @@ int xson_number_initialize(struct xson_element * e, struct xson_lex_element * le
 void xson_number_destroy(struct xson_element * ele) {
 	;
 }
+
 int xson_number_read(struct xson_element * e, void * buf, int bufsize) {
 	return XSON_RESULT_SUCCESS;
 }
@@ -279,15 +366,16 @@ int xson_number_add_child(struct xson_element * parent, struct xson_element * ch
 	printf("Adding children to number element is NOT supported.\n");
 	return XSON_RESULT_INVALID_JSON;
 }
+
 void xson_number_print(struct xson_element * ele, int level, int indent, int dont_pad_on_first_line) {
 	struct xson_number 	*number = ele->internal;
 	char 				t = *(number->end + 1);
-	
 	
 	*(number->end + 1) = 0;
 	XSON_PADDING_PRINT((dont_pad_on_first_line ? 0 : level * indent), "%s", number->start);
 	*(number->end + 1) = t;
 }
+
 struct xson_ele_operations number_ops =  {
 	xson_number_initialize,
 	xson_number_destroy,
@@ -295,6 +383,181 @@ struct xson_ele_operations number_ops =  {
 	xson_number_add_child,
 	xson_number_print
 };
+
+
+int xson_number_to_ullong(struct xson_number * number, unsigned long long *out) {
+	unsigned long long t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtoull(number->start, NULL, 10);
+
+	if (t == ULLONG_MAX && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_number_to_llong(struct xson_number * number, long long *out){
+	long long t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtoll(number->start, NULL, 10);
+
+	if (t == LLONG_MAX && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+
+int xson_number_to_ulong(struct xson_number * number, unsigned long int *out){
+	unsigned long int t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtoul(number->start, NULL, 10);
+
+	if (t == ULONG_MAX && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_number_to_long(struct xson_number * number, long int *out){
+	long int t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtol(number->start, NULL, 10);
+
+	if (t == LONG_MAX && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_number_to_uint(struct xson_number * number, unsigned int *out){
+	unsigned long int t;
+	int 	 		  res;
+
+	res = xson_number_to_ulong(number, &t);
+
+	if(res != XSON_RESULT_SUCCESS)
+		return res;
+
+	if(t > (unsigned long)UINT_MAX)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_number_to_int(struct xson_number * number, int *out){
+	long int t;
+	int 	 res;
+
+	res = xson_number_to_long(number, &t);
+
+	if(res != XSON_RESULT_SUCCESS)
+		return res;
+
+	if(t > (long)INT_MAX || t < (long)INT_MIN)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_number_to_ldouble(struct xson_number * number, long double *out){
+	long double t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtold(number->start, NULL);
+
+	if ((t == -HUGE_VALL || t == HUGE_VALL) && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+int xson_number_to_double(struct xson_number * number, double *out){
+	double t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtod(number->start, NULL);
+
+	if ((t == -HUGE_VAL || t == HUGE_VAL) && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_number_to_float(struct xson_number * number, float *out){
+	float t;
+
+	assert(number != NULL);
+	assert(out != NULL);
+
+	if (number == NULL || out == NULL)
+		return XSON_RESULT_ERROR;
+
+	errno = 0;
+	t = strtof(number->start, NULL);
+
+	if ((t == -HUGE_VALF || t == HUGE_VALF) && errno == ERANGE)
+		return XSON_RESULT_OOG;
+
+	*out = t;
+	
+	return XSON_RESULT_SUCCESS;
+}
 
 int xson_pair_initialize(struct xson_element * e, struct xson_lex_element * lex) {
 	struct xson_pair *pair;
@@ -305,11 +568,13 @@ int xson_pair_initialize(struct xson_element * e, struct xson_lex_element * lex)
 	memset(pair, 0, sizeof(struct xson_pair));
 	return XSON_RESULT_SUCCESS;
 }
+
 void xson_pair_destroy(struct xson_element * ele) {
 	struct xson_pair *pair = ele->internal;
 	pair->key->ops->destroy(pair->key);
 	pair->value->ops->destroy(pair->value);
 }
+
 int xson_pair_read(struct xson_element * e, void * buf, int bufsize) {
 	return XSON_RESULT_INVALID_JSON;
 }
@@ -318,6 +583,7 @@ int xson_pair_add_child(struct xson_element * parent, struct xson_element * chil
 	printf("Adding children to pair element is NOT supported.\n");
 	return XSON_RESULT_INVALID_JSON;
 }
+
 void xson_pair_print(struct xson_element * ele, int level, int indent, int dont_pad_on_first_line) {
 	struct xson_pair *pair = ele->internal;
 	pair->key->ops->print(pair->key, level, indent, 0);
@@ -331,3 +597,24 @@ struct xson_ele_operations pair_ops =  {
 	xson_pair_add_child,
 	xson_pair_print
 };
+
+
+struct xson_string* xson_pair_get_key(struct xson_pair * pair) {
+	assert(pair != NULL);
+	assert(pair->key != NULL);
+
+	if (pair == NULL || pair->key == NULL)
+		return NULL;
+
+	return (struct xson_string *)pair->key->internal;
+}
+
+struct xson_element* xson_pair_get_value(struct xson_pair * pair) {
+	assert(pair != NULL);
+	assert(pair->value != NULL);
+
+	if (pair == NULL)
+		return NULL;
+
+	return pair->value;
+}
