@@ -46,9 +46,16 @@ void xson_root_destroy(struct xson_element * ele) {
 	val->child->ops->destroy(val->child);
 }
 
-int xson_root_read(struct xson_element * e, void * buf, int bufsize) {
-	printf("Read operation on root element is NOT supported.\n");
-	return XSON_RESULT_INVALID_JSON;
+/*
+* if root element holds a array, access it like "[n]".
+* Otherwise root element holds a object element, access
+* it as normal object element.
+*/
+struct xson_element *
+xson_root_get_child(struct xson_element * ele, const char * expr) {
+	assert(ele != NULL);
+
+	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
 }
 
 int xson_root_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -73,7 +80,7 @@ void xson_root_print(struct xson_element * ele, int level, int indent, int dont_
 struct xson_ele_operations root_ops =  {
 	xson_root_initialize,
 	xson_root_destroy,
-	xson_root_read,
+	xson_root_get_child,
 	xson_root_add_child,
 	xson_root_print
 };
@@ -119,9 +126,9 @@ void xson_object_destroy(struct xson_element * ele) {
 	free(obj->pairs);
 }
 
-int xson_object_read(struct xson_element * e, void * buf, int bufsize) {
-	printf("Read operation on object element is NOT supported.\n");
-	return XSON_RESULT_INVALID_JSON;
+struct xson_element *
+xson_object_get_child(struct xson_element * ele, const char * expr) {
+	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
 }
 
 int xson_object_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -163,7 +170,7 @@ void xson_object_print(struct xson_element * ele, int level, int indent, int don
 struct xson_ele_operations object_ops = {
 	xson_object_initialize,
 	xson_object_destroy,
-	xson_object_read,
+	xson_object_get_child,
 	xson_object_add_child,
 	xson_object_print
 };
@@ -232,9 +239,9 @@ void xson_array_destroy(struct xson_element * ele) {
 	free(array->array);
 }
 
-int xson_array_read(struct xson_element * e, void * buf, int bufsize) {
-	printf("Read operation on array element is NOT supported.\n");
-	return XSON_RESULT_INVALID_JSON;
+struct xson_element *
+xson_array_get_child(struct xson_element * ele, const char * expr) {
+	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
 }
 
 int xson_array_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -273,7 +280,7 @@ void xson_array_print(struct xson_element * ele, int level, int indent, int dont
 struct xson_ele_operations array_ops =  {
 	xson_array_initialize,
 	xson_array_destroy,
-	xson_array_read,
+	xson_array_get_child,
 	xson_array_add_child,
 	xson_array_print
 };
@@ -306,17 +313,21 @@ int xson_string_initialize(struct xson_element * e, struct xson_lex_element * le
 	string->end = lex->end;
 	return XSON_RESULT_SUCCESS;
 }
+
 void xson_string_destroy(struct xson_element * ele) {
 	;
 }
-int xson_string_read(struct xson_element * e, void * buf, int bufsize) {
-	return XSON_RESULT_SUCCESS;
+
+struct xson_element *
+xson_string_get_child(struct xson_element * ele, const char * expr) {
+	return (struct xson_element *)XSON_RESULT_OP_NOTSUPPORTED;
 }
 
 int xson_string_add_child(struct xson_element * parent, struct xson_element * child) {
 	printf("Adding children to string element is NOT supported.\n");
 	return XSON_RESULT_INVALID_JSON;
 }
+
 void xson_string_print(struct xson_element * ele, int level, int indent, int dont_pad_on_first_line) {
 	struct xson_string 	*string = ele->internal;
 	char 				t = *(string->end + 1);
@@ -325,10 +336,11 @@ void xson_string_print(struct xson_element * ele, int level, int indent, int don
 	XSON_PADDING_PRINT((dont_pad_on_first_line ? 0 : level * indent), "\"%s\"", string->start);
 	*(string->end + 1) = t;
 }
+
 struct xson_ele_operations string_ops =  {
 	xson_string_initialize,
 	xson_string_destroy,
-	xson_string_read,
+	xson_string_get_child,
 	xson_string_add_child,
 	xson_string_print
 };
@@ -358,8 +370,9 @@ void xson_number_destroy(struct xson_element * ele) {
 	;
 }
 
-int xson_number_read(struct xson_element * e, void * buf, int bufsize) {
-	return XSON_RESULT_SUCCESS;
+struct xson_element *
+xson_number_get_child(struct xson_element * ele, const char * expr) {
+	return (struct xson_element *)XSON_RESULT_OP_NOTSUPPORTED;
 }
 
 int xson_number_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -379,7 +392,7 @@ void xson_number_print(struct xson_element * ele, int level, int indent, int don
 struct xson_ele_operations number_ops =  {
 	xson_number_initialize,
 	xson_number_destroy,
-	xson_number_read,
+	xson_number_get_child,
 	xson_number_add_child,
 	xson_number_print
 };
@@ -575,8 +588,9 @@ void xson_pair_destroy(struct xson_element * ele) {
 	pair->value->ops->destroy(pair->value);
 }
 
-int xson_pair_read(struct xson_element * e, void * buf, int bufsize) {
-	return XSON_RESULT_INVALID_JSON;
+struct xson_element *
+xson_pair_get_child(struct xson_element * ele, const char * expr) {
+	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
 }
 
 int xson_pair_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -593,7 +607,7 @@ void xson_pair_print(struct xson_element * ele, int level, int indent, int dont_
 struct xson_ele_operations pair_ops =  {
 	xson_pair_initialize,
 	xson_pair_destroy,
-	xson_pair_read,
+	xson_pair_get_child,
 	xson_pair_add_child,
 	xson_pair_print
 };

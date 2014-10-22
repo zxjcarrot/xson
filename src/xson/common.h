@@ -97,6 +97,7 @@ void * xson_malloc(struct xmpool_t * pool, size_t size);
 int xson_is_number_start(char ch);
 int xson_is_blanks(char ch);
 
+#define XSON_RESULT_INVALID_EXPR -7		/* invalid expression for accessing child element */
 #define XSON_RESULT_OOG -6				/* result out of range */
 #define XSON_RESULT_TYPE_MISMATCH -5	/* result type mismatch */
 #define XSON_RESULT_OP_NOTSUPPORTED -4  /* operation not supported by a specific type */

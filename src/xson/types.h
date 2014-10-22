@@ -52,7 +52,16 @@ typedef struct xson_ele_operations {
 	*/ 
 	void (*destroy)(struct xson_element * ele);
 	
-	int (*read)(struct xson_element * ele, void * buf, int bufsize);
+
+	/*
+	* Get child element by json accessor.
+	* Return: a pointer to the child element,
+	*		  XSON_RESULT_OP_NOTSUPPORTED if this type of element 
+	*		  does not support this operation(xson_string, xson_number),
+	*		  XSON_RESULT_INVALID_JSON if @expr is invalid for
+	*		  this type of element.
+	*/
+	struct xson_element * (*get_child)(struct xson_element * ele, const char * expr);
 
 	/*
 	* Add a element to another element as a child.
