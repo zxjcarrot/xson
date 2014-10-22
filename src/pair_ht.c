@@ -229,7 +229,7 @@ inline struct xson_pair * xson_pair_ht_retrieve(struct xson_pair_ht * ht, const 
 
 	list_for_each(p, &ht->table[h]) {
 		struct xson_pair * entry = list_entry(p, struct xson_pair, hash_link);
-		if (xson_pair_ht_cmp(entry, key)) {
+		if (xson_pair_ht_cmp(entry, key) == 0) {
 			return entry;
 		}
 	}

@@ -14,7 +14,15 @@ LINKPARAMS = -g -O0 -shared
 #options for development
 #CFLAGS = -g -O0 -Wall -fpic
 #options for release
-CFLAGS = -g -O2 -Wall -Werror -fpic
+CFLAGS = -g -O0 -Wall -Werror -fpic
+
+#default page size
+XSON_PAGE_SIZE=2048
+
+include config
+
+start:
+	echo $(XSON_PAGE_SIZE)
 
 all: $(PROGRAM)
 
@@ -23,7 +31,7 @@ $(PROGRAM): compile
 .SUFFIXES: .c.o
 
 compile:
-	$(CC)  -I$(INCLUDE) $(CFLAGS) -c $(XSON_SRC) $<
+	$(CC)  -I$(INCLUDE) $(CFLAGS) -DXSON_PAGE_SIZE=$(XSON_PAGE_SIZE) -c $(XSON_SRC) $<
 
 clean:
 	-rm *.o

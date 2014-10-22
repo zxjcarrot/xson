@@ -1,3 +1,11 @@
-xson parser: eek, invalid json string near '
-        "ID": "7148' !
-xson parser: invalid json string.
+xson parser: success.
+{
+    "term":1,
+    "candidate_id":{
+        "ip":"192.168.1.2",
+        "port":8888
+    },
+    "last_log_idx":1,
+    "last_log_term":2
+}
+192.168.1.2

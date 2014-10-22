@@ -151,7 +151,7 @@ int xson_object_add_child(struct xson_element * parent, struct xson_element * ch
 void xson_object_print(struct xson_element * ele, int level, int indent, int dont_pad_on_first_line) {
 	int 				i;
 	struct xson_object 	*obj = ele->internal;
-	XSON_PADDING_PRINT((dont_pad_on_first_line ? 0 : level * indent), " {\n");
+	XSON_PADDING_PRINT((dont_pad_on_first_line ? 0 : level * indent), "{\n");
 	for (i = 0; i < obj->idx; ++i) {
 		if (i)XSON_PADDING_PRINT(0, ",\n");
 		obj->pairs[i]->ops->print(obj->pairs[i], level + 1, indent, 0);
@@ -340,7 +340,7 @@ int xson_string_to_buf(struct xson_string * string, char * buf, size_t len){
 	if(string == NULL || buf == NULL)
 		return XSON_RESULT_ERROR;
 
-	memcpy(buf, string->start, (size_t)(string->end - string->start));
+	memcpy(buf, string->start, (size_t)(string->end - string->start + 1));
 
 	return XSON_RESULT_SUCCESS;
 }
@@ -617,4 +617,78 @@ struct xson_element* xson_pair_get_value(struct xson_pair * pair) {
 		return NULL;
 
 	return pair->value;
+}
+
+
+/*
+* Convert the element to a specific type.
+* Return: a pointer to that specific type of element,
+*         NULL if actual type of the lement does not
+*         match the desired type(implied by the fucntion name).
+* @elt: the element to convert.
+*/
+struct xson_string * xson_elt_to_string(struct xson_element * elt) {
+	assert(elt != NULL);
+	assert(elt->internal != NULL);
+
+	
+	if (elt == NULL || elt->type != ELE_TYPE_STRING) 
+		return NULL;
+
+	return (struct xson_string *)elt->internal;
+}
+
+struct xson_number * xson_elt_to_number(struct xson_element * elt) {
+	assert(elt != NULL);
+	assert(elt->internal != NULL);
+
+	
+	if (elt == NULL || elt->type != ELE_TYPE_NUMBER) 
+		return NULL;
+
+	return (struct xson_number *)elt->internal;
+}
+
+struct xson_value * xson_elt_to_value(struct xson_element * elt) {
+	assert(elt != NULL);
+	assert(elt->internal != NULL);
+
+	
+	if (elt == NULL || (elt->type != ELE_TYPE_VALUE && elt->type != ELE_TYPE_ROOT))
+		return NULL;
+
+	return (struct xson_value *)elt->internal;
+}
+
+struct xson_array * xson_elt_to_array(struct xson_element * elt) {
+	assert(elt != NULL);
+	assert(elt->internal != NULL);
+
+	
+	if (elt == NULL || elt->type != ELE_TYPE_ARRAY) 
+		return NULL;
+
+	return (struct xson_array *)elt->internal;
+}
+
+struct xson_object * xson_elt_to_object(struct xson_element * elt) {
+	assert(elt != NULL);
+	assert(elt->internal != NULL);
+
+	
+	if (elt == NULL || elt->type != ELE_TYPE_OBJECT)
+		return NULL;
+
+	return (struct xson_object *)elt->internal;
+}
+
+struct xson_pair * xson_elt_to_pair(struct xson_element * elt) {
+	assert(elt != NULL);
+	assert(elt->internal != NULL);
+
+	
+	if (elt == NULL || elt->type != ELE_TYPE_PAIR)
+		return NULL;
+
+	return (struct xson_pair *)elt->internal;
 }

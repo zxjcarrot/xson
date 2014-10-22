@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm config
+
 XSON_TEST="test"
 XSON_TEST_CFLAGS="-Wall -Werror -O0"
 XSON_TEST_CC="gcc"
@@ -21,7 +23,9 @@ echo $xson_test
 eval "$xson_test"
 
 if [ -x $XSON_TEST ]; then
-	echo pagesize: `./$XSON_TEST`
+	echo XSON_PAGE_SIZE=`./$XSON_TEST` >> config
 fi
-
+if [ -x $XSON_TEST ]; then
+	echo XSON_PAGE_SIZE=`./$XSON_TEST` >> config
+fi
 rm -rf $XSON_TEST

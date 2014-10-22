@@ -57,8 +57,9 @@ int xson_init(struct xson_context * ctx, const char * str);
 * Do the real parsing for the ctx.
 * Return: 0 on success, -1 on failure.
 * @ctx: the context being parsed.
+* @out: holds the root element if successfully parsed
 */
-int xson_parse(struct xson_context * ctx);
+int xson_parse(struct xson_context * ctx, struct xson_element ** out);
 
 /*
 * Clean and free up the context.

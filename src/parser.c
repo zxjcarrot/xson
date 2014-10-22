@@ -596,7 +596,7 @@ static int xson_handle_closed_array(struct xson_context * ctx,
 	}
 }
 
-int xson_parse(struct xson_context * ctx) {
+int xson_parse(struct xson_context * ctx, struct xson_element ** out) {
 	char * cp = ctx->str_buf;
 	int ret;
 	struct xson_element * parent = NULL;
@@ -636,6 +636,8 @@ int xson_parse(struct xson_context * ctx) {
 	if (parent != ctx->root || ctx->stk_top > 2 ||
 	   (xson_stack_top_state(ctx) != LEX_STATE_OBJECT &&
 	   xson_stack_top_state(ctx) != LEX_STATE_ARRAY))goto error;
+
+	*out = ctx->root;
 
 	return 0;
 
