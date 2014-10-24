@@ -97,19 +97,33 @@ void * xson_malloc(struct xmpool_t * pool, size_t size);
 int xson_is_number_start(char ch);
 int xson_is_blanks(char ch);
 
-#define XSON_RESULT_INVALID_EXPR -7		/* invalid expression for accessing child element */
-#define XSON_RESULT_OOG -6				/* result out of range */
-#define XSON_RESULT_TYPE_MISMATCH -5	/* result type mismatch */
-#define XSON_RESULT_OP_NOTSUPPORTED -4  /* operation not supported by a specific type */
-#define XSON_RESULT_ERROR -3			/* some errors occured */
-#define XSON_RESULT_OOM -2 				/* out of memory */
-#define XSON_RESULT_INVALID_JSON -1		/* the input json string is invalid */
-#define XSON_RESULT_SUCCESS 0			/* success */
+#define XSON_EXPR_NULL            ((struct xson_element *)0)
+#define XSON_EXPR_KEY_NOT_EXIST   ((struct xson_element *)1)	/* there is no mapping for this key */
+#define XSON_EXPR_INVALID_EXPR    ((struct xson_element *)2)	/* invalid expression for accessing child element */
+#define XSON_EXPR_INDEX_OOR	      ((struct xson_element *)3)	/* idx in the expression out of range */
+#define XSON_EXPR_OP_NOTSUPPORTED ((struct xson_element *)4)	/* idx in the expression out of range */
+#define XSON_EXPR_OOM 			  ((struct xson_element *)5)	/* out of memory */
+#define XSON_GOOD_ELEMENT(e)      (e != XSON_EXPR_KEY_NOT_EXIST &&   \
+								   e != XSON_EXPR_INVALID_EXPR &&    \
+								   e != XSON_EXPR_INDEX_OOR &&       \
+								   e != XSON_EXPR_OP_NOTSUPPORTED && \
+								   e != XSON_EXPR_NULL &&            \
+								   e != XSON_EXPR_OOM)
 
-#define XSON_PADDING_PRINT(N, format, ...)do {\
-	int n = (N);\
-	while(n--)putchar(' ');\
-	printf(format, ##__VA_ARGS__);\
+#define XSON_RESULT_INVALID_EXPR    -8	/* invalid expression for accessing child element */
+#define XSON_RESULT_KEY_NOT_EXIST   -7	/* there is no mapping for this key */
+#define XSON_RESULT_OOR             -6	/* result out of range */
+#define XSON_RESULT_TYPE_MISMATCH   -5	/* result type mismatch */
+#define XSON_RESULT_OP_NOTSUPPORTED -4  /* operation not supported by a specific type */
+#define XSON_RESULT_ERROR           -3	/* some errors occured */
+#define XSON_RESULT_OOM             -2 	/* out of memory */
+#define XSON_RESULT_INVALID_JSON    -1	/* the input json string is invalid */
+#define XSON_RESULT_SUCCESS          0	/* success */
+
+#define XSON_PADDING_PRINT(N, format, ...)do { \
+	int n = (N);                               \
+	while(n--)putchar(' ');                    \
+	printf(format, ##__VA_ARGS__);             \
 }while(0)
 
 #ifdef __cplusplus

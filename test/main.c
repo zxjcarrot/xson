@@ -37,6 +37,7 @@ int main(int argc, char const *argv[]){
 	}else{
 		printf("xson parser: unknown error.\n");
 	}
+	
 	val = xson_elt_to_value(root);
 	elt = xson_value_get_elt(val);
 	obj = xson_elt_to_object(elt);

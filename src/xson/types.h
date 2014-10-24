@@ -54,7 +54,7 @@ typedef struct xson_ele_operations {
 	
 
 	/*
-	* Get child element by json accessor.
+	* Get child element by an expression(key1.key2[i].key3....).
 	* Return: a pointer to the child element,
 	*		  XSON_RESULT_OP_NOTSUPPORTED if this type of element 
 	*		  does not support this operation(xson_string, xson_number),
@@ -210,6 +210,44 @@ struct xson_array  * xson_elt_to_array(struct xson_element * elt);
 struct xson_object * xson_elt_to_object(struct xson_element * elt);
 struct xson_pair   * xson_elt_to_pair(struct xson_element * elt);
 
+
+struct xson_element * xson_get_by_expr(struct xson_element * elt, const char * key);
+
+/*
+* Accessing a field of number type by expression.
+* Return: XSON_RESULT_SUCCESS if the conversion is successful,
+* 		  XSON_RESULT_OOG if the value overflows or underflows,
+*		  XSON_RESULT_ERROR if the @elt or @expr or @out is null,
+*		  XSON_RESULT_TYPE_MISMATCH	if the type of element
+*         indicated by the last key in @expr is not compatible
+*         with the type implied by the function name.
+* @elt: the root element to start with.
+* @expr: the dot-separated keys(key1.key2.key3[n].key4 etc...).
+* @out: this field holds the value if successfully converted.
+*/
+int xson_get_ullong_by_expr(struct xson_element * elt, const char * expr, unsigned long long *out);
+int xson_get_llong_by_expr(struct xson_element * elt, const char * expr, long long *out);
+int xson_get_ulong_by_expr(struct xson_element * elt, const char * expr, unsigned long int *out);
+int xson_get_long_by_expr(struct xson_element * elt, const char * expr, long int *out);
+int xson_get_uint_by_expr(struct xson_element * elt, const char * expr, unsigned int *out);
+int xson_get_int_by_expr(struct xson_element * elt, const char * expr, int *out);
+int xson_get_double_by_expr(struct xson_element * elt, const char * expr, double *out);
+int xson_get_float_expr(struct xson_element * elt, const char * expr, float *out);
+
+
+/*
+* Accessing a field of string type by expression.
+* Return: XSON_RESULT_SUCCESS if the conversion is successful,
+*		  XSON_RESULT_ERROR if the @elt or @expr or @out is null,
+*		  XSON_RESULT_TYPE_MISMATCH	if the type of element
+*         indicated by the last key in @expr is not compatible
+*         with the type implied by the function name.
+* @elt: the root element to start with.
+* @expr: the dot-separated keys(key1.key2.key3[n].key4 etc...).
+* @buf: the buffer holds the string.
+* @size: size of @buf in byte.
+*/
+int xson_get_string_by_expr(struct xson_element * elt, const char * expr,char * buf, size_t size);
 #ifdef __cplusplus
 }
 #endif

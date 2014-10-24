@@ -43,7 +43,6 @@ static int xson_pair_ht_cmp(struct xson_pair * p1, const char * key2) {
 	struct xson_string 	*string = p1->key->internal;
 	char 				*key1 = string->start;
 	int 				len = string->end - string->start + 1;
-	
 
 	ret = strncmp(key1, key2, len);
 

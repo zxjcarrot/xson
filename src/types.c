@@ -31,6 +31,20 @@
 #include "xson/types.h"
 #include "xson/parser.h"
 
+/*
+* Tests whether @expr is in a form of array accessing expression.
+*/
+static int xson_is_array_expression(const char * expr) {
+	int         idx, ret;
+	static char trailing[1];
+
+	trailing[0] = 0;
+
+	ret = sscanf(expr, "%*[^[][%d]%1s", &idx, trailing);
+
+	return ret == 1;
+}
+
 int xson_root_initialize(struct xson_element * e, struct xson_lex_element * lex) {
 	struct xson_value * val = xson_malloc(&e->ctx->pool, sizeof(struct xson_value));
 	if (val == NULL) {
@@ -54,8 +68,24 @@ void xson_root_destroy(struct xson_element * ele) {
 struct xson_element *
 xson_root_get_child(struct xson_element * ele, const char * expr) {
 	assert(ele != NULL);
+	assert(ele->internal != NULL);
+	struct xson_value *val;
+	struct xson_element *child;
 
-	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
+	if (ele == NULL)
+		return XSON_EXPR_NULL;
+	
+	val = ele->internal;
+
+	if (val == NULL)
+		return XSON_EXPR_NULL;
+	
+	child = xson_value_get_elt(val);
+
+	if(child == NULL)
+		return XSON_EXPR_NULL;
+
+	return child->ops->get_child(child, expr);
 }
 
 int xson_root_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -128,7 +158,15 @@ void xson_object_destroy(struct xson_element * ele) {
 
 struct xson_element *
 xson_object_get_child(struct xson_element * ele, const char * expr) {
-	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
+	assert(ele != NULL);
+	assert(ele->internal != NULL);
+	struct xson_object  *obj;
+
+	if(ele == NULL || ele->internal == NULL)
+		return XSON_EXPR_NULL;
+	obj = ele->internal;
+
+	return xson_object_get_pairval(obj, expr);
 }
 
 int xson_object_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -145,7 +183,9 @@ int xson_object_add_child(struct xson_element * parent, struct xson_element * ch
 		return ret;
 	}
 	if (obj->idx >= obj->size) {
-		if (xson_buffer_grow((void **)&obj->pairs, &obj->size, obj->idx, sizeof(struct xson_element *)) == -1) {
+		if (xson_buffer_grow((void **)&obj->pairs,
+		    &obj->size, obj->idx,
+		    sizeof(struct xson_element *)) == -1) {
 			assert(0);
 			return XSON_RESULT_OOM;
 		}
@@ -241,7 +281,26 @@ void xson_array_destroy(struct xson_element * ele) {
 
 struct xson_element *
 xson_array_get_child(struct xson_element * ele, const char * expr) {
-	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
+	assert(ele != NULL);
+	assert(ele->internal != NULL);
+	struct xson_array   *array;
+	int                  is_array, idx;
+
+	if(ele == NULL || ele->internal == NULL)
+		return XSON_EXPR_NULL;
+	array = ele->internal;
+
+	is_array = xson_is_array_expression(expr);
+
+	if (!is_array)
+		return XSON_EXPR_INVALID_EXPR;
+
+	sscanf(expr, "%*[^[][%d]", &idx);
+
+	if (idx < 0 || idx >= array->idx)
+		return XSON_EXPR_INDEX_OOR;
+
+	return xson_array_get_elt(array, idx);
 }
 
 int xson_array_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -255,7 +314,9 @@ int xson_array_add_child(struct xson_element * parent, struct xson_element * chi
 	}
 	
 	if (array->idx >= array->size && 
-		xson_buffer_grow((void **)&array->array, &array->size, array->idx, sizeof(struct xson_element *)) == -1) {
+		xson_buffer_grow((void **)&array->array,
+						 &array->size, array->idx,
+						 sizeof(struct xson_element *)) == -1) {
 		return XSON_RESULT_OOM;
 	}
 	array->array[array->idx++] = child;
@@ -320,7 +381,7 @@ void xson_string_destroy(struct xson_element * ele) {
 
 struct xson_element *
 xson_string_get_child(struct xson_element * ele, const char * expr) {
-	return (struct xson_element *)XSON_RESULT_OP_NOTSUPPORTED;
+	return XSON_EXPR_OP_NOTSUPPORTED;
 }
 
 int xson_string_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -372,7 +433,7 @@ void xson_number_destroy(struct xson_element * ele) {
 
 struct xson_element *
 xson_number_get_child(struct xson_element * ele, const char * expr) {
-	return (struct xson_element *)XSON_RESULT_OP_NOTSUPPORTED;
+	return XSON_EXPR_OP_NOTSUPPORTED;
 }
 
 int xson_number_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -411,7 +472,7 @@ int xson_number_to_ullong(struct xson_number * number, unsigned long long *out) 
 	t = strtoull(number->start, NULL, 10);
 
 	if (t == ULLONG_MAX && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -431,7 +492,7 @@ int xson_number_to_llong(struct xson_number * number, long long *out){
 	t = strtoll(number->start, NULL, 10);
 
 	if (t == LLONG_MAX && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -452,7 +513,7 @@ int xson_number_to_ulong(struct xson_number * number, unsigned long int *out){
 	t = strtoul(number->start, NULL, 10);
 
 	if (t == ULONG_MAX && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -472,7 +533,7 @@ int xson_number_to_long(struct xson_number * number, long int *out){
 	t = strtol(number->start, NULL, 10);
 
 	if (t == LONG_MAX && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -489,7 +550,7 @@ int xson_number_to_uint(struct xson_number * number, unsigned int *out){
 		return res;
 
 	if(t > (unsigned long)UINT_MAX)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -506,7 +567,7 @@ int xson_number_to_int(struct xson_number * number, int *out){
 		return res;
 
 	if(t > (long)INT_MAX || t < (long)INT_MIN)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -526,7 +587,7 @@ int xson_number_to_ldouble(struct xson_number * number, long double *out){
 	t = strtold(number->start, NULL);
 
 	if ((t == -HUGE_VALL || t == HUGE_VALL) && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -545,7 +606,7 @@ int xson_number_to_double(struct xson_number * number, double *out){
 	t = strtod(number->start, NULL);
 
 	if ((t == -HUGE_VAL || t == HUGE_VAL) && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 
@@ -565,7 +626,7 @@ int xson_number_to_float(struct xson_number * number, float *out){
 	t = strtof(number->start, NULL);
 
 	if ((t == -HUGE_VALF || t == HUGE_VALF) && errno == ERANGE)
-		return XSON_RESULT_OOG;
+		return XSON_RESULT_OOR;
 
 	*out = t;
 	
@@ -590,7 +651,7 @@ void xson_pair_destroy(struct xson_element * ele) {
 
 struct xson_element *
 xson_pair_get_child(struct xson_element * ele, const char * expr) {
-	return (struct xson_element *)XSON_RESULT_INVALID_EXPR;
+	return XSON_EXPR_OP_NOTSUPPORTED;
 }
 
 int xson_pair_add_child(struct xson_element * parent, struct xson_element * child) {
@@ -645,7 +706,6 @@ struct xson_string * xson_elt_to_string(struct xson_element * elt) {
 	assert(elt != NULL);
 	assert(elt->internal != NULL);
 
-	
 	if (elt == NULL || elt->type != ELE_TYPE_STRING) 
 		return NULL;
 
@@ -655,7 +715,6 @@ struct xson_string * xson_elt_to_string(struct xson_element * elt) {
 struct xson_number * xson_elt_to_number(struct xson_element * elt) {
 	assert(elt != NULL);
 	assert(elt->internal != NULL);
-
 	
 	if (elt == NULL || elt->type != ELE_TYPE_NUMBER) 
 		return NULL;
@@ -667,7 +726,6 @@ struct xson_value * xson_elt_to_value(struct xson_element * elt) {
 	assert(elt != NULL);
 	assert(elt->internal != NULL);
 
-	
 	if (elt == NULL || (elt->type != ELE_TYPE_VALUE && elt->type != ELE_TYPE_ROOT))
 		return NULL;
 
@@ -678,7 +736,6 @@ struct xson_array * xson_elt_to_array(struct xson_element * elt) {
 	assert(elt != NULL);
 	assert(elt->internal != NULL);
 
-	
 	if (elt == NULL || elt->type != ELE_TYPE_ARRAY) 
 		return NULL;
 
@@ -689,7 +746,6 @@ struct xson_object * xson_elt_to_object(struct xson_element * elt) {
 	assert(elt != NULL);
 	assert(elt->internal != NULL);
 
-	
 	if (elt == NULL || elt->type != ELE_TYPE_OBJECT)
 		return NULL;
 
@@ -700,9 +756,190 @@ struct xson_pair * xson_elt_to_pair(struct xson_element * elt) {
 	assert(elt != NULL);
 	assert(elt->internal != NULL);
 
-	
 	if (elt == NULL || elt->type != ELE_TYPE_PAIR)
 		return NULL;
 
 	return (struct xson_pair *)elt->internal;
+}
+
+
+struct xson_element * xson_get_by_expr(struct xson_element * elt, const char * key) {
+	assert(elt != NULL);
+	assert(key != NULL);
+	char *p;
+	char *buf;
+
+	if (elt == NULL || key == NULL)
+		return XSON_EXPR_NULL;
+
+	buf = malloc(strlen(key) + 1);
+
+	if (buf == NULL)
+		return XSON_EXPR_OOM;
+
+	strcpy(buf, key);
+
+	p = strtok(buf, ".");
+
+	while (p) {
+		elt = elt->ops->get_child(elt, p);
+		if (!XSON_GOOD_ELEMENT(elt))
+			break;
+	}
+
+	free(buf);
+	
+	return elt;
+}
+
+static int xson_convert_expr_res_to_res(struct xson_element * elt) {
+	if (elt == XSON_EXPR_NULL)
+		return XSON_RESULT_ERROR;
+	else if(elt == XSON_EXPR_OOM)
+		return XSON_RESULT_OOM;
+	else if(elt == XSON_EXPR_INDEX_OOR)
+		return XSON_RESULT_OOR;
+	else if(elt == XSON_EXPR_KEY_NOT_EXIST)
+		return XSON_RESULT_KEY_NOT_EXIST;
+	else if(elt == XSON_EXPR_OP_NOTSUPPORTED)
+		return XSON_RESULT_OP_NOTSUPPORTED;
+	else if(elt == XSON_EXPR_INVALID_EXPR)
+		return XSON_RESULT_INVALID_EXPR;
+
+	return XSON_RESULT_SUCCESS;
+}
+
+int xson_get_ull_by_expr(struct xson_element * elt, const char * expr,
+                         unsigned long long *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_ullong(number, out);
+}
+
+int xson_get_llong_by_expr(struct xson_element * elt, const char * expr,
+                        long long *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_llong(number, out);
+}
+
+int xson_get_ulong_by_expr(struct xson_element * elt, const char * expr,
+                           unsigned long int *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_ulong(number, out);
+}
+
+int xson_get_long_by_expr(struct xson_element * elt, const char * expr,
+                          long int *out) {
+		int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_long(number, out);
+}
+
+int xson_get_uint_by_expr(struct xson_element * elt, const char * expr, 
+                          unsigned int *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_uint(number, out);
+}
+
+int xson_get_int_by_expr(struct xson_element * elt, const char * expr,
+                         int *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_int(number, out);
+}
+
+int xson_get_double_by_expr(struct xson_element * elt, const char * expr,
+                            double *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_double(number, out);
+}
+
+int xson_get_float_expr(struct xson_element * elt, const char * expr,
+                        float *out) {
+	int                  rc;
+	struct xson_number * number;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	number = elt->internal;
+
+	return xson_number_to_float(number, out);
+}
+
+int xson_get_string_by_expr(struct xson_element * elt, const char * expr,
+                            char * buf, size_t size) {
+	int                  rc;
+	struct xson_string * string;
+
+	elt = xson_get_by_expr(elt, expr);
+
+	if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+		return rc;
+
+	string = elt->internal;
+
+	return xson_string_to_buf(string, buf, size);
 }
