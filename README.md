@@ -21,5 +21,18 @@ you can use DOMTree-like expression to access a json field, i.e. "foo.bar.array[
 
 Don't forget to call xson_destroy after done with it, since xson used a memory pool to manage memory allocations. 
 
+In addition, xson can be easily used as a json prettifier, simply call xson_print which print out the whole json string in a tree-like form to the stdout.
+	
+	struct xson_context  ctx;
+	int                  ret;
+
+    xson_init(&ctx, json_string);
+    
+    ret = xson_parse(&ctx, &root);
+
+    if (ret == XSON_RESULT_SUCCESS)
+    	xson_print(&ctx, 4);/* 4 for indentation */
+
+    xson_destroy(&ctx);
 #Example
 [Here](https://github.com/zxjcarrot/xson/tree/master/example) is a small example I've written.
