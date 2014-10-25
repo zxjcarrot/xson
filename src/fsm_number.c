@@ -98,11 +98,11 @@ again:
 			fsms->state = NUMBER_STATE_INVALID;
 	}
 	if (fsms->state != NUMBER_STATE_INVALID &&
-	   fsms->state != NUMBER_STATE_END) {
+	    fsms->state != NUMBER_STATE_END) {
 	   	++*cp;
 		goto again;
 	}
 	--*cp;
 	if (fsms->state != NUMBER_STATE_END)return XSON_RESULT_INVALID_JSON;
-	else return ELE_TYPE_NUMBER;
+	else return XSON_RESULT_SUCCESS;
 }

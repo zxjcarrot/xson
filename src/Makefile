@@ -1,5 +1,5 @@
 #sources
-XSON_SRC = parser.c fsm_number.c fsm_string.c list.c common.c pair_ht.c types.c xmalloc.c
+XSON_SRC = parser.c fsm_number.c fsm_string.c list.c common.c pair_ht.c types.c xmalloc.c array.c number.c string.c pair.c root.c object.c null.c bool.c
 #object files
 XSON_OBJ = $(XSON_SRC:.c=.o)
 #executable
@@ -14,7 +14,7 @@ LINKPARAMS = -g -O0 -shared
 #options for development
 #CFLAGS = -g -O0 -Wall -fpic
 #options for release
-CFLAGS = -g -O0 -Wall -Werror -fpic
+CFLAGS = -O2 -Wall -Werror -fpic -DNDEBUG
 
 #default page size
 XSON_PAGE_SIZE=2048

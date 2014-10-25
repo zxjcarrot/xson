@@ -34,41 +34,45 @@ extern "C" {
 #endif
 
 typedef enum xson_lex_state {
-	LEX_STATE_EMPTY, 			/* empty state  */
-	LEX_STATE_LEFT_BRACE, 		/*  {  */
-	LEX_STATE_RIGHT_BRACE,		/* }  */
-	LEX_STATE_LEFT_SQBRACKT, 	/* [  */
-	LEX_STATE_RIGHT_SQBRACKT, 	/* ]  */
-	LEX_STATE_LEFT_DQUOTE,		/* "  */
-	LEX_STATE_RIGHT_DQUOTE,		/* "  */
-	LEX_STATE_COMMA,			/* ,  */
-	LEX_STATE_COLON,			/* :  */
-	LEX_STATE_OBJECT,			/* json object  {...} */
-	LEX_STATE_ARRAY,			/* json array  [...] */
-	LEX_STATE_STRING, 			/* string "..." */
-	LEX_STATE_NUMBER,			/* number value */
-	LEX_STATE_PAIR				/* pair string:value */
+    LEX_STATE_EMPTY,            /* empty state  */
+    LEX_STATE_LEFT_BRACE,       /*  {  */
+    LEX_STATE_RIGHT_BRACE,      /* }  */
+    LEX_STATE_LEFT_SQBRACKT,    /* [  */
+    LEX_STATE_RIGHT_SQBRACKT,   /* ]  */
+    LEX_STATE_LEFT_DQUOTE,      /* "  */
+    LEX_STATE_RIGHT_DQUOTE,     /* "  */
+    LEX_STATE_COMMA,            /* ,  */
+    LEX_STATE_COLON,            /* :  */
+    LEX_STATE_OBJECT,           /* json object  {...} */
+    LEX_STATE_ARRAY,            /* json array  [...] */
+    LEX_STATE_STRING,           /* string "..." */
+    LEX_STATE_NUMBER,           /* number value */
+    LEX_STATE_BOOL,             /* boolean value */
+    LEX_STATE_PAIR,             /* pair string:value */
+    LEX_STATE_NULL              /* null value */
 }xson_lex_state;
 
 typedef enum xson_ele_type {
-	ELE_TYPE_ROOT,
-	ELE_TYPE_VALUE,
-	ELE_TYPE_OBJECT,
-	ELE_TYPE_ARRAY,
-	ELE_TYPE_STRING,
-	ELE_TYPE_NUMBER,
-	ELE_TYPE_PAIR
+    ELE_TYPE_ROOT,
+    ELE_TYPE_VALUE,
+    ELE_TYPE_OBJECT,
+    ELE_TYPE_ARRAY,
+    ELE_TYPE_STRING,
+    ELE_TYPE_NUMBER,
+    ELE_TYPE_BOOL,
+    ELE_TYPE_PAIR,
+    ELE_TYPE_NULL
 }xson_ele_type;
 
 struct xson_element;
 
 typedef struct xson_lex_element {
-	xson_lex_state state;
-	/*
-	* @start, @end: pinpoint(inclusive) the contents of this element inside the json string.
-	*/
-	char *start, *end;
-	struct xson_element * element;
+    xson_lex_state state;
+    /*
+    * @start, @end: pinpoint(inclusive) the contents of this element inside the json string.
+    */
+    char *start, *end;
+    struct xson_element * element;
 }xson_lex_element;
 
 
@@ -98,32 +102,34 @@ int xson_is_number_start(char ch);
 int xson_is_blanks(char ch);
 
 #define XSON_EXPR_NULL            ((struct xson_element *)0)
-#define XSON_EXPR_KEY_NOT_EXIST   ((struct xson_element *)1)	/* there is no mapping for this key */
-#define XSON_EXPR_INVALID_EXPR    ((struct xson_element *)2)	/* invalid expression for accessing child element */
-#define XSON_EXPR_INDEX_OOR	      ((struct xson_element *)3)	/* idx in the expression out of range */
-#define XSON_EXPR_OP_NOTSUPPORTED ((struct xson_element *)4)	/* idx in the expression out of range */
-#define XSON_EXPR_OOM 			  ((struct xson_element *)5)	/* out of memory */
+#define XSON_EXPR_KEY_NOT_EXIST   ((struct xson_element *)1)    /* there is no mapping for this key */
+#define XSON_EXPR_INVALID_EXPR    ((struct xson_element *)2)    /* invalid expression for accessing child element */
+#define XSON_EXPR_INDEX_OOR       ((struct xson_element *)3)    /* idx in the expression out of range */
+#define XSON_EXPR_OP_NOTSUPPORTED ((struct xson_element *)4)    /* idx in the expression out of range */
+#define XSON_EXPR_OOM             ((struct xson_element *)5)    /* out of memory */
+#define XSON_EXPR_TYPE_MISMATCH   ((struct xson_element *)6)    /* result type mismatch */
 #define XSON_GOOD_ELEMENT(e)      (e != XSON_EXPR_KEY_NOT_EXIST &&   \
-								   e != XSON_EXPR_INVALID_EXPR &&    \
-								   e != XSON_EXPR_INDEX_OOR &&       \
-								   e != XSON_EXPR_OP_NOTSUPPORTED && \
-								   e != XSON_EXPR_NULL &&            \
-								   e != XSON_EXPR_OOM)
+                                   e != XSON_EXPR_INVALID_EXPR &&    \
+                                   e != XSON_EXPR_INDEX_OOR &&       \
+                                   e != XSON_EXPR_OP_NOTSUPPORTED && \
+                                   e != XSON_EXPR_NULL &&            \
+                                   e != XSON_EXPR_OOM &&             \
+                                   e != XSON_EXPR_TYPE_MISMATCH)
 
-#define XSON_RESULT_INVALID_EXPR    -8	/* invalid expression for accessing child element */
-#define XSON_RESULT_KEY_NOT_EXIST   -7	/* there is no mapping for this key */
-#define XSON_RESULT_OOR             -6	/* result out of range */
-#define XSON_RESULT_TYPE_MISMATCH   -5	/* result type mismatch */
+#define XSON_RESULT_INVALID_EXPR    -8  /* invalid expression for accessing child element */
+#define XSON_RESULT_KEY_NOT_EXIST   -7  /* there is no mapping for this key */
+#define XSON_RESULT_OOR             -6  /* result out of range */
+#define XSON_RESULT_TYPE_MISMATCH   -5  /* result type mismatch */
 #define XSON_RESULT_OP_NOTSUPPORTED -4  /* operation not supported by a specific type */
-#define XSON_RESULT_ERROR           -3	/* some errors occured */
-#define XSON_RESULT_OOM             -2 	/* out of memory */
-#define XSON_RESULT_INVALID_JSON    -1	/* the input json string is invalid */
-#define XSON_RESULT_SUCCESS          0	/* success */
+#define XSON_RESULT_ERROR           -3  /* some errors occured */
+#define XSON_RESULT_OOM             -2  /* out of memory */
+#define XSON_RESULT_INVALID_JSON    -1  /* the input json string is invalid */
+#define XSON_RESULT_SUCCESS          0  /* success */
 
 #define XSON_PADDING_PRINT(N, format, ...)do { \
-	int n = (N);                               \
-	while(n--)putchar(' ');                    \
-	printf(format, ##__VA_ARGS__);             \
+    int n = (N);                               \
+    while(n--)putchar(' ');                    \
+    printf(format, ##__VA_ARGS__);             \
 }while(0)
 
 #ifdef __cplusplus

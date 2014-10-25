@@ -10,15 +10,13 @@
 char buf[4024000];
 
 int main(int argc, char const *argv[]){
-	int ret, n, idx = 0;
-	struct xson_context ctx;
-	struct xson_element *root = NULL, *elt = NULL;
-	struct xson_value   *val = NULL;
-	struct xson_object  *obj = NULL, *ci_obj = NULL;
-	struct xson_string  *ip_s = NULL;
-	char 				ip_buf[1024] = {0};
+	int                  ret, n, idx = 0;
+	struct xson_context  ctx;
+	struct xson_element *root = NULL;
+	int                  bool_val = -1;
+
 	freopen("test2.input", "r", stdin);
-	freopen("result.txt", "w", stdout);
+	//freopen("result.txt", "w", stdout);
 
 	while((n = read(fileno(stdin), buf + idx, sizeof(buf))) > 0){
 		idx += n;
@@ -38,14 +36,9 @@ int main(int argc, char const *argv[]){
 		printf("xson parser: unknown error.\n");
 	}
 	
-	val = xson_elt_to_value(root);
-	elt = xson_value_get_elt(val);
-	obj = xson_elt_to_object(elt);
-	ci_obj = xson_elt_to_object(xson_object_get_pairval(obj, "candidate_id"));
-	ip_s = xson_elt_to_string(xson_object_get_pairval(ci_obj, "ip"));
-	xson_string_to_buf(ip_s, ip_buf, 1024);
-	printf("%s", ip_buf);
+	xson_get_bool_by_expr(root, "bool", &bool_val);
 
+	printf("bool: %d\n", bool_val);
 	xson_destroy(&ctx);
 
 	return 0;

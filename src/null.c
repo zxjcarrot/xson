@@ -20,59 +20,39 @@
 * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 * DATA, OR PROFITS; OR BUSINESS INTERR
 */
-#ifndef XSON_LEXICAL_H_
-#define XSON_LEXICAL_H_
 
-#include "common.h"
-#include "types.h"
+#include "xson/types.h"
+#include "xson/parser.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define XSON_CTX_INIT_STK_LEN 32
-
-typedef struct xson_context {
-    char * str_buf;
-    int str_len;
-
-    struct xson_lex_element * stack;
-    int stk_top;
-    int stk_len;
-
-    /* root of the json elements. */
-    struct xson_element * root;
-    struct xmpool_t pool;
-}xson_context;
-
-/*
-* Initialize a context for parsing.
-* Return: 0 on success, -1 on failure(out of memory).
-* @ctx: the context being initialized.
-* @str: the json string.
-*/
-int xson_init(struct xson_context * ctx, const char * str);
-
-/*
-* Do the real parsing for the ctx.
-* Return: 0 on success, -1 on failure.
-* @ctx: the context being parsed.
-* @out: holds the root element if successfully parsed
-*/
-int xson_parse(struct xson_context * ctx, struct xson_element ** out);
-
-/*
-* Clean and free up the context.
-* @ctx: the context being destroyed.
-*/
-void xson_destroy(struct xson_context * ctx);
-
-/*
-* Format the json string to tree-like structure.
-*/
-void xson_print(struct xson_context * ctx, int indent);
-
-#ifdef __cplusplus
+static int xson_null_initialize(struct xson_element * e,
+                                struct xson_lex_element * lex) {
+    return XSON_RESULT_SUCCESS;
 }
-#endif
-#endif
+
+static void xson_null_destroy(struct xson_element * ele) {
+    ;
+}
+
+static struct xson_element *
+xson_null_get_child(struct xson_element * ele, const char * expr) {
+    return XSON_EXPR_NULL;
+}
+
+static int xson_null_add_child(struct xson_element * parent,
+                               struct xson_element * child) {
+    printf("Adding children to null element is NOT supported.\n");
+    return XSON_RESULT_INVALID_JSON;
+}
+
+static void xson_null_print(struct xson_element * ele, int level, int indent,
+                     int dont_pad_on_first_line) {
+    XSON_PADDING_PRINT((dont_pad_on_first_line ? 0 : level * indent), "null");
+}
+
+struct xson_ele_operations null_ops =  {
+    xson_null_initialize,
+    xson_null_destroy,
+    xson_null_get_child,
+    xson_null_add_child,
+    xson_null_print
+};

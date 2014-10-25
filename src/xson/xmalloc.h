@@ -40,26 +40,26 @@ extern "C" {
 #define XM_CHUNK_SIZE 4096
 
 typedef struct xmpool_chunk_t {
-	struct list_head chunk_link;
-	/* starting address of this memory chunk */
-	char * smem;
-	/* size of the chunk in bytes */
-	size_t size;
-	/* first unsed byte */
-	char * first;
+    struct list_head chunk_link;
+    /* starting address of this memory chunk */
+    char * smem;
+    /* size of the chunk in bytes */
+    size_t size;
+    /* first unsed byte */
+    char * first;
 }xmpool_chunk_t;
 
 typedef struct xmpool_large_chunk_t {
-	void						*data;
-	struct xmpool_large_chunk_t *next;
+    void                        *data;
+    struct xmpool_large_chunk_t *next;
 }xmpool_large_chunk_t;
 
 #define XM_INIT_CHUNKS 4
 
 typedef struct xmpool_t {
-	struct list_head chunk_list;
-	size_t chunks;
-	size_t chunk_size;
+    struct list_head chunk_list;
+    size_t chunks;
+    size_t chunk_size;
 }xmpool_t;
 
 /*

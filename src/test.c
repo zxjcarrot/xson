@@ -2,6 +2,6 @@
 #include <unistd.h>
 
 int main(){
-	printf("%d", getpagesize());
-	return 0;
+    printf("%d", getpagesize());
+    return 0;
 }

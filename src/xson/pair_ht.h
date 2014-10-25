@@ -32,13 +32,13 @@ extern "C" {
 struct list_head;
 struct xson_pair;
 typedef struct xson_pair_ht {
-	struct list_head * table;
-	/* The index of xson_pair_ht_primes we are using as the size of the hash table */
-	int p_index;
-	/* the number of entries this hash table has */
-	int n_entries;
-	/* The number of slots this hash table has */
-	int len;
+    struct list_head * table;
+    /* The index of xson_pair_ht_primes we are using as the size of the hash table */
+    int p_index;
+    /* the number of entries this hash table has */
+    int n_entries;
+    /* The number of slots this hash table has */
+    int len;
 }xson_pair_ht;
 
 /*

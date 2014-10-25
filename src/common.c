@@ -23,36 +23,36 @@
 #include "xson/common.h"
 
 int xson_buffer_grow(void ** buffer, int *old_len, int len, int ele_size) {
-	void 	*new_buffer;
-	int 	new_len = *old_len;
-	
+    void    *new_buffer;
+    int     new_len = *old_len;
+    
 
-	while(new_len <= len) {
-		new_len <<= 1;
-	}
-	//printf("Expanding old buffer %p with size %d to new size %d.\n", *buffer, *old_len * ele_size, new_len * ele_size);
-	if((new_buffer = realloc(*buffer, new_len * ele_size)) == NULL) {
-		return XSON_RESULT_OOM;
-	}
-	//printf("new buffer address: %p.\n", new_buffer);
-	*buffer = new_buffer;
-	*old_len = new_len;
+    while(new_len <= len) {
+        new_len <<= 1;
+    }
+    //printf("Expanding old buffer %p with size %d to new size %d.\n", *buffer, *old_len * ele_size, new_len * ele_size);
+    if((new_buffer = realloc(*buffer, new_len * ele_size)) == NULL) {
+        return XSON_RESULT_OOM;
+    }
+    //printf("new buffer address: %p.\n", new_buffer);
+    *buffer = new_buffer;
+    *old_len = new_len;
 
-	return XSON_RESULT_SUCCESS;
+    return XSON_RESULT_SUCCESS;
 }
 
 int xson_is_number_start(char ch) {
-	return ch == '-' || (ch >= '0' && ch <= '9');
+    return ch == '-' || (ch >= '0' && ch <= '9');
 }
 
 int xson_is_blanks(char ch) {
-	return ch == '\t' || ch == '\n' || ch == '\r' || ch == ' ';
+    return ch == '\t' || ch == '\n' || ch == '\r' || ch == ' ';
 }
 
 inline void * xson_malloc(struct xmpool_t * pool, size_t size) {
-	if(size > pool->chunk_size) {
-		assert(0);
-		return NULL;
-	}
-	return xmpool_alloc(pool, size);
+    if(size > pool->chunk_size) {
+        assert(0);
+        return NULL;
+    }
+    return xmpool_alloc(pool, size);
 }

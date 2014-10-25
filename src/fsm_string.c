@@ -24,71 +24,71 @@
 #include "xson/fsm_string.h"
 
 inline static int fsm_string_is_hex_char(char c) {
-	return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+    return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
 }
 
 int fsm_string_run(struct fsm_string * fsms, char ** cp) {
-	fsms->state = STRING_STATE_START;
-	/*
-	* Ugly switch/cases implementation of finite state machine.
-	*/
+    fsms->state = STRING_STATE_START;
+    /*
+    * Ugly switch/cases implementation of finite state machine.
+    */
 again:
-	if (*(++*cp) == 0) {
-		fsms->state = STRING_STATE_INVALID;
-		goto out;
-	}
-	switch (fsms->state) {
-		case STRING_STATE_START:
-			if (**cp == '\"')fsms->state = STRING_STATE_END;
-			else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
-			else fsms->state = STRING_STATE_UNICODE_CHAR;
-			break;
-		case STRING_STATE_UNICODE_CHAR:
-			if (**cp == '\"')fsms->state = STRING_STATE_END;
-			else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
-			else fsms->state = STRING_STATE_UNICODE_CHAR;
-			break;
-		case STRING_STATE_RSOLIDUS:
-			if (**cp == '\"' || **cp == '\\' || **cp == '/' || **cp == 'b' || 
-			   **cp == 'f' || **cp == 'n' || **cp == 'r' || **cp == 't')
-				fsms->state = STRING_STATE_RS_ESCAPE_CHARS;
-			else if (**cp == 'u')
-				fsms->state = STRING_STATE_RS_U;
-			else
-				fsms->state = STRING_STATE_INVALID;
-			break;
-		case STRING_STATE_RS_ESCAPE_CHARS:
-			if (**cp == '\"')fsms->state = STRING_STATE_END;
-			else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
-			else fsms->state = STRING_STATE_UNICODE_CHAR;
-			break;
-		case STRING_STATE_RS_U:
-			if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D1;
-			else fsms->state = STRING_STATE_INVALID;
-			break;
-		case STRING_STATE_RS_U_D1:
-			if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D2;
-			else fsms->state = STRING_STATE_INVALID;
-			break;
-		case STRING_STATE_RS_U_D2:
-			if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D3;
-			else fsms->state = STRING_STATE_INVALID;
-			break;
-		case STRING_STATE_RS_U_D3:
-			if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D4;
-			else fsms->state = STRING_STATE_INVALID;
-			break;
-		case STRING_STATE_RS_U_D4:
-			if (**cp == '"')fsms->state = STRING_STATE_END;
-			else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
-			else fsms->state = STRING_STATE_UNICODE_CHAR;
-			break;
-		default:
-			fsms->state = STRING_STATE_INVALID;
-	}
-	if (fsms->state != STRING_STATE_INVALID &&
-	   fsms->state != STRING_STATE_END)
-		goto again;
+    if (*(++*cp) == 0) {
+        fsms->state = STRING_STATE_INVALID;
+        goto out;
+    }
+    switch (fsms->state) {
+        case STRING_STATE_START:
+            if (**cp == '\"')fsms->state = STRING_STATE_END;
+            else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
+            else fsms->state = STRING_STATE_UNICODE_CHAR;
+            break;
+        case STRING_STATE_UNICODE_CHAR:
+            if (**cp == '\"')fsms->state = STRING_STATE_END;
+            else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
+            else fsms->state = STRING_STATE_UNICODE_CHAR;
+            break;
+        case STRING_STATE_RSOLIDUS:
+            if (**cp == '\"' || **cp == '\\' || **cp == '/' || **cp == 'b' || 
+               **cp == 'f' || **cp == 'n' || **cp == 'r' || **cp == 't')
+                fsms->state = STRING_STATE_RS_ESCAPE_CHARS;
+            else if (**cp == 'u')
+                fsms->state = STRING_STATE_RS_U;
+            else
+                fsms->state = STRING_STATE_INVALID;
+            break;
+        case STRING_STATE_RS_ESCAPE_CHARS:
+            if (**cp == '\"')fsms->state = STRING_STATE_END;
+            else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
+            else fsms->state = STRING_STATE_UNICODE_CHAR;
+            break;
+        case STRING_STATE_RS_U:
+            if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D1;
+            else fsms->state = STRING_STATE_INVALID;
+            break;
+        case STRING_STATE_RS_U_D1:
+            if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D2;
+            else fsms->state = STRING_STATE_INVALID;
+            break;
+        case STRING_STATE_RS_U_D2:
+            if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D3;
+            else fsms->state = STRING_STATE_INVALID;
+            break;
+        case STRING_STATE_RS_U_D3:
+            if (fsm_string_is_hex_char(**cp))fsms->state = STRING_STATE_RS_U_D4;
+            else fsms->state = STRING_STATE_INVALID;
+            break;
+        case STRING_STATE_RS_U_D4:
+            if (**cp == '"')fsms->state = STRING_STATE_END;
+            else if (**cp == '\\')fsms->state = STRING_STATE_RSOLIDUS;
+            else fsms->state = STRING_STATE_UNICODE_CHAR;
+            break;
+        default:
+            fsms->state = STRING_STATE_INVALID;
+    }
+    if (fsms->state != STRING_STATE_INVALID &&
+        fsms->state != STRING_STATE_END)
+        goto again;
 out:
-	return fsms->state == STRING_STATE_END ? XSON_RESULT_SUCCESS : XSON_RESULT_INVALID_JSON;
+    return fsms->state == STRING_STATE_END ? XSON_RESULT_SUCCESS : XSON_RESULT_INVALID_JSON;
 }

@@ -28,28 +28,28 @@ extern "C" {
 #endif
 
 typedef enum number_state {
-	NUMBER_STATE_START,
-	NUMBER_STATE_NEG,				/* - sign */
-	NUMBER_STATE_ZERO,				/* 0.XXX */
-	NUMBER_STATE_FIRST_DIGIT,		/* [+-][1-9]... */
-	NUMBER_STATE_DIGITS_INT,		/* integral part of the number */ 
-	NUMBER_STATE_DIGITS_FRAC,		/* fractional part of the number */
-	NUMBER_STATE_DOT,				/* the dot */
-	NUMBER_STATE_E,					/* [eE] */
-	NUMBER_STATE_SIGN_AFTER_E,		/* [eE][+-] */
-	NUMBER_STATE_DIGITS_AFTER_E,	/* [eE][+-]([0-9])* */
-	NUMBER_STATE_INVALID,
-	NUMBER_STATE_END
+    NUMBER_STATE_START,
+    NUMBER_STATE_NEG,               /* - sign */
+    NUMBER_STATE_ZERO,              /* 0.XXX */
+    NUMBER_STATE_FIRST_DIGIT,       /* [+-][1-9]... */
+    NUMBER_STATE_DIGITS_INT,        /* integral part of the number */ 
+    NUMBER_STATE_DIGITS_FRAC,       /* fractional part of the number */
+    NUMBER_STATE_DOT,               /* the dot */
+    NUMBER_STATE_E,                 /* [eE] */
+    NUMBER_STATE_SIGN_AFTER_E,      /* [eE][+-] */
+    NUMBER_STATE_DIGITS_AFTER_E,    /* [eE][+-]([0-9])* */
+    NUMBER_STATE_INVALID,
+    NUMBER_STATE_END
 }number_state;
 
 typedef struct fsm_number {
-	enum number_state state;
+    enum number_state state;
 }fsm_number;
 
 /*
 * Run the number in the state machine until succeeded or a invalid state has been reached.
 * After calling this function, @cp points to wherever the state machine stops.
-* Return: 0 on success, -1 on failure.
+* Return: XSON_RESULT_SUCCESS on success, XSON_RESULT_INVALID_JSON on failure.
 * @fsms: the state machine to be run upon.
 * @cp: the input pointer.
 */
