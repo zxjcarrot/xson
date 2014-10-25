@@ -45,7 +45,7 @@ int xson_is_number_start(char ch) {
     return ch == '-' || (ch >= '0' && ch <= '9');
 }
 
-int xson_is_blanks(char ch) {
+inline int xson_is_blanks(char ch) {
     return ch == '\t' || ch == '\n' || ch == '\r' || ch == ' ';
 }
 

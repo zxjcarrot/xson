@@ -675,6 +675,11 @@ xson_handle_closed_array(struct xson_context * ctx,
     }
 }
 
+static void xson_skip_blanks(char **cp) {
+    while(xson_is_blanks(**cp))
+        (*cp)++;
+}
+
 int xson_parse(struct xson_context * ctx, struct xson_element ** out) {
     char * cp = ctx->str_buf;
     int ret;
@@ -684,6 +689,7 @@ int xson_parse(struct xson_context * ctx, struct xson_element ** out) {
     parent = ctx->root;
 
     while (*cp) {
+        xson_skip_blanks(&cp);
         if (*cp == '{') {/* open object */
             ret = xson_handle_open_object(ctx, &parent, &cp);
         } else if (*cp == '[') {/* open array */
@@ -704,9 +710,7 @@ int xson_parse(struct xson_context * ctx, struct xson_element ** out) {
             ret = xson_handle_bool(ctx, &parent, &cp);
         } else if (!strncmp(cp, "null", 4)) {
             ret = xson_handle_null(ctx, &parent, &cp);
-        } else if (xson_is_blanks(*cp)) {
-            ret = XSON_RESULT_SUCCESS;
-        }else {
+        } else {
             ret = XSON_RESULT_INVALID_JSON;
         }
 
