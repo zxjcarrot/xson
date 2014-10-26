@@ -62,7 +62,7 @@ inline int xson_pair_ht_init(struct xson_pair_ht * ht);
 * @xson_pair: &struct xson_pair entry to be inserted
 * @key: hash key
 */
-inline int xson_pair_ht_insert(struct xson_pair_ht * ht, struct xson_pair * new);
+inline int xson_pair_ht_insert(struct xson_pair_ht * ht, struct xson_pair * new_entry);
 
 /*
 * Insert a xson_pair into the hash table. 
@@ -71,7 +71,7 @@ inline int xson_pair_ht_insert(struct xson_pair_ht * ht, struct xson_pair * new)
 * @xson_pair: &struct xson_pair entry to be inserted
 * @key: hash key
 */
-inline int xson_pair_ht_insert_replace(struct xson_pair_ht * ht, struct xson_pair * new);
+inline int xson_pair_ht_insert_replace(struct xson_pair_ht * ht, struct xson_pair * new_entry);
 
 /*
 * Delete the xson_pair with the key from the hash table.

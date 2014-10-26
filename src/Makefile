@@ -14,7 +14,7 @@ LINKPARAMS = -g -O0 -shared
 #options for development
 #CFLAGS = -g -O0 -Wall -fpic
 #options for release
-CFLAGS = -O2 -Wall -Werror -fpic -DNDEBUG
+CFLAGS = -O2 -Wall -Werror -fpic -DNDEBUG	
 
 #default page size
 XSON_PAGE_SIZE=2048

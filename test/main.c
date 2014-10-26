@@ -14,8 +14,9 @@ int main(int argc, char const *argv[]){
 	struct xson_context  ctx;
 	struct xson_element *root = NULL;
 	//int                  bool_val = -1;
+	int                  val;
 
-	freopen("test2.input", "r", stdin);
+	freopen("test3.input", "r", stdin);
 	freopen("result.txt", "w", stdout);
 
 	while((n = read(fileno(stdin), buf + idx, sizeof(buf))) > 0){
@@ -36,9 +37,9 @@ int main(int argc, char const *argv[]){
 		printf("xson parser: unknown error.\n");
 	}
 	
-	//xson_get_bool_by_expr(root, "bool", &bool_val);
+	xson_get_int_by_expr(root, "[0].1", &val);
 
-	//printf("bool: %d\n", bool_val);
+	printf("val: %d\n", val);
 	xson_destroy(&ctx);
 
 	return 0;

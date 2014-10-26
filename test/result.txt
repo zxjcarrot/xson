@@ -1,24 +1,7 @@
 xson parser: success.
-{
-    "term":1,
-    "bool":true,
-    "null":null,
-    "candidate_id":{
-        "ip":"192.168.1.2",
-        "port":8888,
-        "array":[
-            1,
-            2
-        ]
-    },
-    "array":[
-        121,
-        232,
-        213,
-        2144,
-        124
-    ],
-    "last_log_idx":1,
-    "last_log_term":2,
-    "double":1e11
-}
+[
+    {
+        "1":1
+    }
+]
+val: 1

@@ -2,7 +2,7 @@
 **xson** is a json parser written in C.
 #Installation
     git clone https://github.com/zxjcarrot/xson
-    cd xson
+    cd xson/src
     make all
     sudo make install
 

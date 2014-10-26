@@ -342,3 +342,22 @@ int xson_get_arraysize_by_expr(struct xson_element * elt,
 
     return xson_array_get_size((struct xson_array *)elt->internal);
 }
+
+
+int xson_get_stringsize_by_expr(struct xson_element * elt, 
+                                const char * expr) {
+    int                 rc;
+    struct xson_string *string;
+
+    elt = xson_get_by_expr(elt, expr);
+
+    if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+        return rc;
+
+    if (elt->type != ELE_TYPE_STRING)
+        return XSON_RESULT_TYPE_MISMATCH;
+
+    string = (struct xson_string *)elt->internal;
+
+    return string->end - string->start + 1;
+}

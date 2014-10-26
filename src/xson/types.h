@@ -286,6 +286,7 @@ struct xson_object * xson_get_object_by_expr(struct xson_element * elt, const ch
 * @expr: the dot-separated keys(key1.key2.key3[n].key4 etc...).
 */
 int xson_get_arraysize_by_expr(struct xson_element * elt, const char * expr);
+int xson_get_stringsize_by_expr(struct xson_element * elt, const char * expr);
 #ifdef __cplusplus
 }
 #endif
