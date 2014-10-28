@@ -189,6 +189,24 @@ int xson_number_to_int(struct xson_number * number, int *out){
     return XSON_RESULT_SUCCESS;
 }
 
+int xson_number_to_intptr(struct xson_number * number, intptr_t *out) {
+    long long int t;
+    int           res;
+
+    res = xson_number_to_llong(number, &t);
+
+    if(res != XSON_RESULT_SUCCESS)
+        return res;
+
+    #if __WORDSIZE == 32
+    if(t > INT_MAX || t < INT_MIN)
+        return XSON_RESULT_OOR;
+    #endif
+
+    *out = t;
+    return XSON_RESULT_SUCCESS;
+}
+
 int xson_number_to_ldouble(struct xson_number * number, long double *out){
     long double t;
 

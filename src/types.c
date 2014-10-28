@@ -238,6 +238,20 @@ int xson_get_int_by_expr(struct xson_element * elt, const char * expr,
     return xson_number_to_int(number, out);
 }
 
+int xson_get_intptr_by_expr(struct xson_element * elt, const char * expr,
+                            intptr_t *out) {
+    int                  rc;
+    struct xson_number * number;
+
+    elt = xson_get_by_expr(elt, expr);
+
+    if ((rc = xson_convert_expr_res_to_res(elt)) != XSON_RESULT_SUCCESS)
+        return rc;
+
+    number = elt->internal;
+
+    return xson_number_to_intptr(number, out);
+}
 int xson_get_bool_by_expr(struct xson_element * elt, const char * expr,
                          int *out) {
     int                  rc;

@@ -22,6 +22,7 @@
 */
 #ifndef XSON_TYPES_H_
 #define XSON_TYPES_H_
+#include <stdint.h>
 #include "pair_ht.h"
 #include "list.h"
 #include "common.h"
@@ -184,6 +185,7 @@ int xson_number_to_ulong(struct xson_number * number, unsigned long int *out);
 int xson_number_to_long(struct xson_number * number, long int *out);
 int xson_number_to_uint(struct xson_number * number, unsigned int *out);
 int xson_number_to_int(struct xson_number * number, int *out);
+int xson_number_to_intptr(struct xson_number * number, intptr_t *out);
 int xson_bool_to_int(struct xson_bool * xbool, int *out);
 int xson_number_to_double(struct xson_number * number, double *out);
 int xson_number_to_float(struct xson_number * number, float *out);
@@ -242,6 +244,7 @@ int xson_get_ulong_by_expr(struct xson_element * elt, const char * expr, unsigne
 int xson_get_long_by_expr(struct xson_element * elt, const char * expr, long int *out);
 int xson_get_uint_by_expr(struct xson_element * elt, const char * expr, unsigned int *out);
 int xson_get_int_by_expr(struct xson_element * elt, const char * expr, int *out);
+int xson_get_intptr_by_expr(struct xson_element * elt, const char * expr, int *out);
 int xson_get_bool_by_expr(struct xson_element * elt, const char * expr, int *out);
 int xson_get_double_by_expr(struct xson_element * elt, const char * expr, double *out);
 int xson_get_float_expr(struct xson_element * elt, const char * expr, float *out);
