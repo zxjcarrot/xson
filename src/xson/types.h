@@ -244,7 +244,7 @@ int xson_get_ulong_by_expr(struct xson_element * elt, const char * expr, unsigne
 int xson_get_long_by_expr(struct xson_element * elt, const char * expr, long int *out);
 int xson_get_uint_by_expr(struct xson_element * elt, const char * expr, unsigned int *out);
 int xson_get_int_by_expr(struct xson_element * elt, const char * expr, int *out);
-int xson_get_intptr_by_expr(struct xson_element * elt, const char * expr, int *out);
+int xson_get_intptr_by_expr(struct xson_element * elt, const char * expr, intptr_t *out);
 int xson_get_bool_by_expr(struct xson_element * elt, const char * expr, int *out);
 int xson_get_double_by_expr(struct xson_element * elt, const char * expr, double *out);
 int xson_get_float_expr(struct xson_element * elt, const char * expr, float *out);

@@ -21,10 +21,10 @@ XSON_PAGE_SIZE=2048
 
 include config
 
-start:
-	echo $(XSON_PAGE_SIZE)
-
 all: $(PROGRAM)
+
+test:
+	echo $(XSON_PAGE_SIZE)
 
 $(PROGRAM): compile
 	$(CC) -o $(PROGRAM) $(LINKPARAMS) $(XSON_OBJ)
